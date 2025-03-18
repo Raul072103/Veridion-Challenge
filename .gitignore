@@ -1,0 +1,12 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+*.ipynb
+.idea
+.venv
+venv/
+assets/
+.ipynb_checkpoints
