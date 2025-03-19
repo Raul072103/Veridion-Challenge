@@ -21,8 +21,6 @@ columns_to_drop = [
     'last_updated_at', # this would be useful if I wanted to merge them into one, but since I am just grouping them, i dont care
     'status',
     'main_country',
-    'main_business_category',
-    'business_model',
     'num_locations',
     'company_type',
     'naics_vertical',

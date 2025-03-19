@@ -21,7 +21,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2', device=device)
 
 # if 2 locations are in a range of 10m, it means that they are similar
-GEODESIC_THRESHOLD = 10
+GEODESIC_THRESHOLD = 100
 
 
 def get_text_similarity(text1, text2):
@@ -45,16 +45,20 @@ def calculate_geodesic_distance(lat1, lon1, lat2, lon2):
 
 # Function to compute location similarity between two rows
 def location_code(row1, row2):
-
     lat1, lon1 = row1.get('main_latitude'), row1.get('main_longitude')
     lat2, lon2 = row2.get('main_latitude'), row2.get('main_longitude')
 
     geodesic_distance = calculate_geodesic_distance(lat1, lon1, lat2, lon2)
+    geodesic_score = 0.0
     if geodesic_distance is not None:
         if geodesic_distance == 0.0:
-            return 1.0
+            geodesic_score = 1.0
         else:
-            return min(1.0, GEODESIC_THRESHOLD / geodesic_distance)
+            geodesic_score = min(1.0, GEODESIC_THRESHOLD / geodesic_distance)
+
+    # in this case it is safe to return 1.0
+    if geodesic_score == 1.0:
+        return 1.0
 
     direct_comparisons = {
         'main_country_code': (row1['main_country_code'] == row2['main_country_code']) if row1['main_country_code'] and row2['main_country_code'] else False,
@@ -88,7 +92,7 @@ def location_code(row1, row2):
     else:
         location_similarity = 0.0
 
-    final_score = (location_similarity + location_sim_mean) / 2
+    final_score = (geodesic_score + location_similarity + location_sim_mean) / 3
 
     return final_score
 

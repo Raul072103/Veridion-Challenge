@@ -6,6 +6,8 @@ import pandas as pd
 
 #  'business_tags',
 #  'product_type',
+#  'main_business_category',
+#  'business_model',
 #  'main_industry',
 #  'main_sector',
 #  'generated_business_tags',
@@ -36,7 +38,14 @@ def name_similarity_score(row1, row2):
     if not names1 and not names2:
         return 0.0
 
-    return len(names1.intersection(names2)) / (len(names1.union(names2)))
+    exact_match_score = len(names1.intersection(names2)) / (len(names1.union(names2)))
+    text_similarity_score = 0.0
+    for name1 in names1:
+        for name2 in names2:
+            text_similarity_score = max(text_similarity_score, get_text_similarity(name1, name2))
+
+    combined_score = (exact_match_score * 0.6 + text_similarity_score * 0.4)
+    return combined_score
 
 
 def contact_similarity_score(row1, row2):
@@ -80,7 +89,9 @@ def business_similarity_score(row1, row2):
     sector_field = 'main_sector' # no multiple values
     industry_field = 'main_industry' # no multiple values
     product_field = 'product_type' # no multiple values, all have that &, but I consider them something simillar to CAEN codes
-
+    business_field = ['main_business_category', 'business_model']
+#'main_business_category',
+#  'business_model',
     # Initialize sets for each category
     tags1, tags2 = set(), set()
     sector1, sector2 = set(), set()
@@ -93,6 +104,14 @@ def business_similarity_score(row1, row2):
             tags1.update(tag.strip() for tag in row1[field].split('|'))
         if pd.notna(row2[field]):
             tags2.update(tag.strip() for tag in row2[field].split('|'))
+
+    # Populate business sets
+    for field in tag_fields:
+        if pd.notna(row1[field]):
+            tags1.update(tag.strip() for tag in row1[field].split('|'))
+        if pd.notna(row2[field]):
+            tags2.update(tag.strip() for tag in row2[field].split('|'))
+
 
     # Populate single-value sets for sector, industry, and product type
     if pd.notna(row1[sector_field]):
@@ -137,6 +156,18 @@ def similarity_score(row1, row2):
     # name is also important, remember we have grouped the business together, so if they come from the same domains
     # contact is VERY important, although we could have a "managing" business managing multiple business
 
-    final_score = location_score*0.6 + name_score*0.1 + contact_score*0.2 + description_score*0.05 + business_score*0.05
+    # 0.0 score means => no data
 
-    return final_score, location_score, name_score, contact_score, description_score, business_score
+    if location_score == 0.0:
+        # why? Remember I already grouped them by their domains, if no location information then the crawler failed
+        # somehow
+        location_score = 1.0
+
+    # why I won't do the same for name_score, contact_score, description_score, business_score
+    # if I don't have data for the location than I can presume that they are in the same location but not necessarily
+    # the same company
+
+
+    final_score = location_score*0.3 + name_score*0.2 + contact_score*0.3 + description_score*0.1 + business_score*0.1
+
+    return final_score
