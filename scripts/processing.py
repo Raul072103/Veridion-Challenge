@@ -18,7 +18,7 @@ columns_to_drop = [
     'tiktok_url',
     'alexa_rank',
     'created_at',
-    'last_updated_at', # this would be useful if I wanted to merge them into one, but since I am just grouping them, i dont care
+    'last_updated_at',
     'status',
     'main_country',
     'num_locations',
@@ -35,9 +35,7 @@ columns_to_drop = [
     'revenue_type',
     'employee_count',
     'employee_count_type',
-    # df['domains'].equals(df['all_domains']) => TRUE
     'all_domains',
-    # i dont know what to do with this information right now
     'website_language_code'
 ]
 
@@ -106,6 +104,7 @@ def process_clean_parquet():
     else:
         print("None of the specified columns were found in the DataFrame.")
 
+    # I want to be able to identify each row by a unique id
     df['id'] = range(len(df))
 
     df.to_parquet('./../assets/processed_veridion_entity_resolution_challenge_cleaned.snappy.parquet', engine='pyarrow')
@@ -113,9 +112,3 @@ def process_clean_parquet():
     # Initially I wanted to drop companies entries that don't have a linkedin url, facebook, url, website url etc
     # after more thinking I realised I don't know from what sources the data comes so i decided not to delete anything
     # since data could be coming from a source I am not aware of, maybe some gov site
-
-    # I want to be able to identify each row by a unique id
-
-
-if __name__ == '__main__':
-    process_clean_parquet()

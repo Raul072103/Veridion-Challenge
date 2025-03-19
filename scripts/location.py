@@ -44,7 +44,7 @@ def calculate_geodesic_distance(lat1, lon1, lat2, lon2):
 
 
 # Function to compute location similarity between two rows
-def location_code(row1, row2):
+def location_similarity_code(row1, row2):
     lat1, lon1 = row1.get('main_latitude'), row1.get('main_longitude')
     lat2, lon2 = row2.get('main_latitude'), row2.get('main_longitude')
 

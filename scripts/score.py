@@ -1,28 +1,5 @@
-from scripts.location import location_code, get_text_similarity
+from scripts.location import location_similarity_code, get_text_similarity
 import pandas as pd
-#  'short_description',
-#  'long_description',
-#  'generated_description',
-
-#  'business_tags',
-#  'product_type',
-#  'main_business_category',
-#  'business_model',
-#  'main_industry',
-#  'main_sector',
-#  'generated_business_tags',
-
-#   should be statically checked for
-#  'primary_phone',
-#  'phone_numbers',
-#  'primary_email',
-#  'emails',
-#  'other_emails'
-
-# I think I will also go with statically checking
-#  'company_name',
-#  'company_legal_names',
-#  'company_commercial_names',
 
 
 def name_similarity_score(row1, row2):
@@ -89,14 +66,14 @@ def business_similarity_score(row1, row2):
     sector_field = 'main_sector' # no multiple values
     industry_field = 'main_industry' # no multiple values
     product_field = 'product_type' # no multiple values, all have that &, but I consider them something simillar to CAEN codes
-    business_field = ['main_business_category', 'business_model']
-#'main_business_category',
-#  'business_model',
+    business_fields = ['main_business_category', 'business_model']
+
     # Initialize sets for each category
     tags1, tags2 = set(), set()
     sector1, sector2 = set(), set()
     industry1, industry2 = set(), set()
     product1, product2 = set(), set()
+    business1, bussiness2 = set(), set()
 
     # Populate tag sets
     for field in tag_fields:
@@ -106,11 +83,11 @@ def business_similarity_score(row1, row2):
             tags2.update(tag.strip() for tag in row2[field].split('|'))
 
     # Populate business sets
-    for field in tag_fields:
+    for field in business_fields:
         if pd.notna(row1[field]):
-            tags1.update(tag.strip() for tag in row1[field].split('|'))
+            business1.update(tag.strip() for tag in row1[field].split('|'))
         if pd.notna(row2[field]):
-            tags2.update(tag.strip() for tag in row2[field].split('|'))
+            bussiness2.update(tag.strip() for tag in row2[field].split('|'))
 
 
     # Populate single-value sets for sector, industry, and product type
@@ -138,15 +115,16 @@ def business_similarity_score(row1, row2):
     sector_score = calculate_score(sector1, sector2)
     industry_score = calculate_score(industry1, industry2)
     product_score = calculate_score(product1, product2)
+    bussiness_score = calculate_score(business1, bussiness2)
 
     # Final score as a weighted average (equal weights for now)
-    total_score = (tag_score + sector_score + industry_score + product_score) / 4
+    total_score = (tag_score + sector_score + industry_score + product_score + bussiness_score) / 5
 
     return total_score
 
 
 def similarity_score(row1, row2):
-    location_score = location_code(row1, row2)
+    location_score = location_similarity_code(row1, row2)
     name_score = name_similarity_score(row1, row2)
     contact_score = contact_similarity_score(row1, row2)
     description_score = description_similarity_score(row1, row2)
@@ -154,7 +132,7 @@ def similarity_score(row1, row2):
 
     # location is VERY important, I am going to "penalize" business further away
     # name is also important, remember we have grouped the business together, so if they come from the same domains
-    # contact is VERY important, although we could have a "managing" business managing multiple business
+    # contact is also important, although we could have a "managing" business managing multiple business
 
     # 0.0 score means => no data
 
@@ -166,7 +144,6 @@ def similarity_score(row1, row2):
     # why I won't do the same for name_score, contact_score, description_score, business_score
     # if I don't have data for the location than I can presume that they are in the same location but not necessarily
     # the same company
-
 
     final_score = location_score*0.3 + name_score*0.2 + contact_score*0.3 + description_score*0.1 + business_score*0.1
 

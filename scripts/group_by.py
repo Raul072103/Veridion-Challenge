@@ -80,27 +80,3 @@ def create_data_groups(df: pd.DataFrame):
 
     print("reroute operations=", reroute_operations)
     return groups
-
-
-if __name__ == '__main__':
-    df = pd.read_parquet('./../assets/processed_veridion_entity_resolution_challenge_cleaned.snappy.parquet')
-    groups = create_data_groups(df)
-
-    print("len groups:", len(groups))
-    # for group in groups:
-    #     print(group)
-
-    ids = {}
-    intersection = 0
-
-    total = 0
-
-    for group in groups:
-        for id in group.row_indexes:
-            if id in ids:
-                intersection += 1
-                print("1: ", group, "\n", "2: ", ids[id])
-            else:
-                ids[id] = group
-
-    print("intersection", intersection)

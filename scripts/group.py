@@ -56,7 +56,7 @@ class DataGroup:
             self.ios_app_url.add(row['ios_app_url'])
 
     # if this is called, it means that we need to reroute using the dictionaries received the URIs that point to this
-    # DataGroup
+    # DataGroup.
     def reroute_uris(self, reroute_to_group, domain_dict, facebook_url_dict, twitter_url_dict, instagram_url_dict,
                      linkedin_url_dict, youtube_url_dict, android_app_dict, ios_app_dict):
 
