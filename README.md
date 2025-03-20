@@ -18,7 +18,7 @@ At times, incomplete data may require you to make decisions where there is no cl
 
 Return the updated dataset where you have correctly identified unique companies and grouped duplicate records accordingly.
 
-# Before words
+# Foreword
 
 Before I dive deep in my solution I would like to clear some things about how I see 'unique' companies.
 
@@ -29,7 +29,7 @@ why in my solution I consider companies as legal entities, meaning if KFC has 40
 
 ### Another important thing
 
-The description of the challenge strictly implies grouping duplicates together so I won't do anything reargding merging duplicates together.
+The description of the challenge strictly implies grouping duplicates together so I won't do anything regarding merging duplicates together.
 
 # Initial thoughts
 
@@ -42,7 +42,7 @@ Initally I hoped to be able to find meaning in the values so I can create an alg
 
 Afterwards, I decided that most likely companies that have the same domain represent the same company, so afterwards I traversed companies that have the same **domain** and I found out a very intersting case which made me realise that the problem gets even more complicated.
 
-### The ecards phenomen 
+### The 'ecards' phenomen 
 
 This business basically makes business digital cards for companies, so I was getting multiple companies from the **1ecards.in** domain that were totally differnt.
 
@@ -87,7 +87,7 @@ Therefore, below I will argument each column dropped from the dataset.
 - 'nace_rev2_codes'
 
 
-**FYI, you can skip this short description of this codes**
+**FYI, you can skip this short description of these codes**
 
 - SICS (**Sustainability Industry Classification System**): It has largely been phased out in favor of more standardized systems like NAICS.
 
@@ -101,9 +101,9 @@ Therefore, below I will argument each column dropped from the dataset.
   
 **End of short description of codes**
 
-Basically, this are indicators, simillary to CAEN codes in Romania, to identify the domain in which the company activates, but as I found out, besides the fact thay they are in different regions, **SICS** was replaced by **NAICS**, only used in older contexts. 
+Basically, this are indicators, similar to CAEN codes in Romania, to identify the domain in which the company activates, but as I found out, besides the fact thay they are in different regions, **SICS** was replaced by **NAICS** and is now only used in older contexts. 
 
-It becomes clear that handling these columns requires deeper understanding of them, possibly searching for discrapencies between the codes that actually exist (there are errors in the code, for example I found multiple companies representing a single entity with different latitude and longitude coordinates, that leads me to believe that clearly everything in the dataset could have a little noise), not to mention that we don't have that many non-null values.
+It becomes clear that handling these columns requires deeper understanding of them, possibly searching for discrepancies between the codes that actually exist (there are errors in the code, for example I found multiple companies representing a single entity with different latitude and longitude coordinates, that leads me to believe that clearly everything in the dataset could have a little noise), not to mention that we don't have that many non-null values.
 
 ```
  25  naics_2022_primary_code       18048 non-null  object
@@ -224,7 +224,7 @@ Now that the dataset is cleaned, I can focus only on the relevant features. Curr
  38  id                        33446 non-null  int64 
 ```
 
-Initially, I wanted to do something that could be done by simple algorithms without more complex problems.
+Initially, I wanted to do something that could be done by simple algorithms without the need for a complicated solution.
 
 However I spent some time in traversing the dataset and I found that the data cannot and is not that reliable always (e.g. wonderland case, ecards).
 
@@ -244,9 +244,11 @@ First things first, how do I group them together? Short story, If 2 rows point t
 
 Of course there is also the case:
 
-C1 -> fakedomain.com
-C2 -> linkedin/fakepage
-C3 -> fakedomain.com, linkedin/fakepage
+G1 -> fakedomain.com
+
+G2 -> linkedin/fakepage
+
+G3 -> fakedomain.com, linkedin/fakepage
 
 So I need to make sure I cover this cases as well that can appear in this situations.
 For this I have wrote 2 scripts: **group.py** and **group_by.py**
@@ -302,9 +304,12 @@ Another important thing is that I run an experiment, the most **expensive** oper
 
 ## Yey, we have the rows grouped together, now what?
 
-Now the part that is most complicated, how do I detect if companies are duplciates.
+Now the part that is most complicated, how do I detect if companies are duplicates.
 
-Before I start explaining, remember I have grouped the companies that could possibly be duplicates, so my chain of taught was based on this, because things are a little different and from the huge list of unknow variables.
+Before I start explaining, remember I have grouped the companies 
+that could possibly be duplicates, so my chain of taught 
+was based on this, because things are a little different and 
+I have reduced the number of unknown variables.
 
 When could 2 companies be duplicated.
 
@@ -316,11 +321,11 @@ I built a function in **location.py**, more specifically:
 location_similarity_code()
 ```
 
-This function, calculates the distance in meters based on langitude and latitude, if both of those are present in the current row.
+This function, calculates the distance in meters based on longitude and latitude, if both of those are present in the current row.
 
 If this is not possible, we check if the fields that represent attributes of a location are equal. However the fields may not be exactly equal.
 
-That is why I decided to use an embedding model to embed the location string and then calculate the cosine similarity. Honestly I went with this approach because I found about this while looking at vector databases and it is something that I can visualise. I know I cnanot visualise in a more than a 3 dimensional space, but at least like this I can what is going on.
+That is why I decided to use an embedding model to embed the location string and then calculate the cosine similarity. Honestly I went with this approach because I found about this while looking at vector databases and it is something that I can visualise. I know I cannot visualise in a more than a 3 dimensional space, but at least like this I can what is going on.
 
 After this I calculate the final score:
 
@@ -407,6 +412,16 @@ You can find the bar graphs for certain solution numbers in ./assets/solution_{n
 4. Score the simillarity of postition, description, business type, name, between every 2 rows in the group
 5. Save the solution
 
+### Folders
+
+- **/scripts** -> holds the python scripts for the program
+- **/duplicates** 
+  - processed_with_duplicates.parquet (.parquet file that holds the companies
+grouped together)
+  - csv_duplicated_groups.zip (zip folder with .csf files, each .csv file representing companies grouped together)
+- **/jupter_notebooks** -> these are the notebooks that were used by
+me to explore the dataset (you could look over them if you want)
+- **test.ipynb** out of the box jupyter notebook to read the .parquet file
 # Afterword
 
 I enjoyed the challenge very much, it was interesting and required some solutions that made me think out of the box.
